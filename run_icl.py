@@ -25,7 +25,7 @@ parser = argparse.ArgumentParser(description="SLURM job script with arguments.")
 # Define command-line arguments
 
 parser.add_argument("--param1", type=int, required=True, help="An integer parameter")
-parser.add_argument("--param2", type=int, required=False, help="An integer parameter")
+parser.add_argument("--param2", type=float, required=False, help="An integer parameter")
 parser.add_argument("--param3", type=int, required=False, help="An integer parameter")
 parser.add_argument("--output", type=str, required=True, help="A string parameter")
 
@@ -61,8 +61,8 @@ input_proj_dim = D
 # ============================================================
 # Model Architecture Parameters
 # ============================================================
-n_nodes = args.param2                  # Number of nodes in the Markov chain
-transform_func = 'identity'       # 'exp', 'relu', 'elu', 'softplus', 'sigmoid', or 'identity'
+n_nodes = 5                  # Number of nodes in the Markov chain
+transform_func = 'exp'       # 'exp', 'relu', 'elu', 'softplus', 'sigmoid', or 'identity'
 learn_base_rates = True      # If True, allow gradient updates to unmasked base rates
 
 rate_encoder_type = "linear"  # 'linear' (K·z) or 'mlp' (z → n_nodes² log-rate shift)
@@ -73,8 +73,8 @@ decoder_mlp_depth = 2
 decoder_mlp_width = 32
 
 # Detailed-balance split (linear encoder only). "directed" keeps the original model.
-rate_param = "directed"      # "directed" or "db_split"
-db_phi0 = 1e6                # Hinge threshold on each force scalar
+rate_param = "db_split"      # "directed" or "db_split"
+db_phi0 = args.param2                # Hinge threshold on each force scalar
 db_lambda = 100.0            # Weight on DB hinge penalty (ignored unless db_split)
 
 # Node map M(z) -> n-vector, and which of K / B train.
@@ -82,9 +82,9 @@ db_lambda = 100.0            # Weight on DB hinge penalty (ignored unless db_spl
 #             'relu' (ReLU of column sums of M),
 #             'frozen_mlp' (frozen MLP on off-diagonal transform(M) if FROZEN_MLP_HIDDEN_MAP_APPLY_TRANSFORM else M)
 # Freeze encoder: random CRN features, train readout. Freeze decoder: train CRN, random B.
-hidden_map = "frozen_mlp"
+hidden_map = "crn"
 hidden_mlp_depth = 2
-hidden_mlp_width = 4
+hidden_mlp_width = 8
 learn_rate_encoder = True
 learn_rate_decoder = True
 
@@ -397,4 +397,3 @@ for name in models_to_train.keys():
         print(f"✓ Saved {name.upper()} model to {output_dir}/model_{name}.pt")
 print(f"✓ Saved results to {results_path}")
 print(f"✓ Execution Time: {end_time - start_time:.2f} seconds")
-    

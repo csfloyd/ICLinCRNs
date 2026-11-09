@@ -11,12 +11,17 @@ from evaluation import evaluate_iwl, evaluate_icl_novel#, evaluate_icl_swap
 
 
 def _nll_with_db_penalty(model, nll_loss):
-    """Add optional detailed-balance hinge; no-op for models without the method."""
-    penalty_fn = getattr(model, "detailed_balance_penalty", None)
-    if penalty_fn is None:
-        zero = nll_loss.detach() * 0.0
-        return nll_loss, zero
-    penalty = penalty_fn()
+    """Add optional model penalties; no-op for models without the hooks.
+
+    Hooks: ``detailed_balance_penalty()`` (Markov models) and
+    ``rate_anchor_penalty()`` (enzyme cascade). The returned penalty (logged as
+    'db_penalty') is the sum of whichever hooks exist.
+    """
+    penalty = nll_loss.detach() * 0.0
+    for hook in ("detailed_balance_penalty", "rate_anchor_penalty"):
+        fn = getattr(model, hook, None)
+        if fn is not None:
+            penalty = penalty + fn()
     return nll_loss + penalty, penalty
 
 
@@ -313,6 +318,13 @@ def train_models_joint(models, train_loader, val_loader, device, n_epochs=200, l
             history[name]['db_penalty'].append(
                 np.mean(train_db_penalties[name]) if train_db_penalties[name] else float('nan')
             )
+
+        # Per-epoch drift of kinetic rates from init (models exposing rate_drift()).
+        for name, model in models.items():
+            drift_fn = getattr(model, "rate_drift", None)
+            if drift_fn is not None:
+                for k, v in drift_fn().items():
+                    history[name].setdefault(f"rate_drift_{k}", []).append(v)
 
         should_eval = gmm is not None and N is not None and (epoch + 1) % eval_frequency == 0
         if should_eval:

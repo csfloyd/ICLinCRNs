@@ -34,6 +34,10 @@ LINEAR_HIDDEN_MAP_APPLY_TRANSFORM = True
 FROZEN_MLP_HIDDEN_MAP_APPLY_TRANSFORM = True
 
 
+LOG_RATE_CLAMP_MIN = float(np.log(1e-8))
+LOG_RATE_CLAMP_MAX = float(np.log(1e8))
+
+
 class MatrixTreeMarkovICL(BaseICLModel):
     """
     Matrix Tree Theorem implementation using rate matrix W with CLASSIFICATION output.
@@ -571,7 +575,11 @@ class MatrixTreeMarkovICL(BaseICLModel):
             base_expanded = base_masked.unsqueeze(0).expand(batch_size, -1, -1)
             log_rates = base_expanded + rate_mod
 
-        return torch.clamp(log_rates, min=np.log(1e-6), max=np.log(1e6))
+        return self._clamp_log_rates(log_rates)
+
+    def _clamp_log_rates(self, log_rates):
+        """Clamp log-rates to [LOG_RATE_CLAMP_MIN, LOG_RATE_CLAMP_MAX]."""
+        return torch.clamp(log_rates, min=LOG_RATE_CLAMP_MIN, max=LOG_RATE_CLAMP_MAX)
 
     def _apply_rate_transform(self, log_rates):
         """Map log-rate matrix M to rates via transform_func."""

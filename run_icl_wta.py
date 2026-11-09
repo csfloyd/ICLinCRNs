@@ -39,8 +39,8 @@ output_dir = args.output
 # ============================================================
 L = 128                      # Number of output classes
 K = L                        # Number of GMM classes for data generation
-D = 2                        # Low-D so long decoys can align with the query
-N = args.param1              # Number of context examples per task
+D = args.param1                        # Low-D so long decoys can align with the query
+N = 4                        # Number of context examples per task
 B = 1                        # Burstiness parameter (zipfian sampling weight)
 epsilon = 1e-3               # Within-class noise (standard deviation)
 seed = args.param3           # Random seed for reproducibility
@@ -56,7 +56,7 @@ unique_labels = False         # Distinct context labels so attention is not conf
 # ============================================================
 # Model Architecture Parameters
 # ============================================================
-n_nodes = 5                  # Number of nodes in the WTA network
+n_nodes = 10                  # Number of nodes in the WTA network
 R0 = 5.0                     # Total number of resource, should be >= 1
 activation = 'softplus'      # How to impose Y_j >= 0: 'softplus', 'relu', or 'soft'
 f_activation = 'softplus'    # How to impose f_j >= 0

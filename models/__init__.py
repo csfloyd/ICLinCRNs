@@ -15,6 +15,7 @@ from .markov_icl_oddball import MatrixTreeMarkovICLOddball
 from .mlp_icl_oddball import MLPICLOddball
 from .qk_icl import QKICL
 from .mlp_icl import MLPICL
+from .enzyme_cascade_icl import EnzymeCascadeICL
 
 __all__ = [
     'BaseICLModel',
@@ -27,6 +28,7 @@ __all__ = [
     'MatrixTreeMarkovICLOddball',
     'MLPICLOddball',
     'QKICL',
-    'MLPICL'
+    'MLPICL',
+    'EnzymeCascadeICL'
 ]
 
